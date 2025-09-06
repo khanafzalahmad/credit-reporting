@@ -1,20 +1,7 @@
-
 #include "crow_all.h"
 #include "../include/credit_report.h"
-#include <iostream>
-#include <string>
 
-int main(int argc, char* argv[]) {
-    // Check for test mode
-    if (argc > 1 && std::string(argv[1]) == "--test") {
-        std::cout << "Running test mode..." << std::endl;
-        // Example test logic
-        CreditReport report;
-        report.fetchDetails("Afzal", "Bhandup", "Test Inquiry", "Test Keyword");
-        report.display();
-        return 0;
-    }
-
+int main() {
     crow::SimpleApp app;
 
     CROW_ROUTE(app, "/")
@@ -37,6 +24,7 @@ int main(int argc, char* argv[]) {
 
     CROW_ROUTE(app, "/report").methods("POST"_method)
     ([](const crow::request& req){
+        // Parse form data from req.body
         std::string body = req.body;
         std::string name, address, inquiry, keyword;
 
