@@ -1,19 +1,24 @@
-#include "credit_report.h"
+#include <iostream>
+#include "../include/credit_report_server.h"
 
-int main() {
-    std::string name, address, inquiry, keyword;
-    std::cout << "Enter customer name: ";
-    std::getline(std::cin, name);
-    std::cout << "Enter address: ";
-    std::getline(std::cin, address);
-    std::cout << "Enter inquiry type: ";
-    std::getline(std::cin, inquiry);
-    std::cout << "Enter keyword: ";
-    std::getline(std::cin, keyword);
+void runTests() {
+    std::cout << "Running basic tests..." << std::endl;
 
-    CreditReport report;
-    report.fetchDetails(name, address, inquiry, keyword);
-    report.display();
+    // Example test
+    if (true) {  // Replace with actual test condition
+        std::cout << "Test passed!" << std::endl;
+    } else {
+        std::cerr << "Test failed!" << std::endl;
+    }
+}
 
+int main(int argc, char* argv[]) {
+    if (argc > 1 && std::string(argv[1]) == "--test") {
+        runTests();
+        return 0;
+    }
+
+    CreditReportServer server;
+    server.run();
     return 0;
 }

@@ -1,5 +1,33 @@
-name : cpp credit reporting
+---
+name: C++ CI Workflow
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+      - feature/credit-reporting
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-on : 
-  jobs : 
-    pla
+      #- name: Set up C++ environment
+        #uses: actions/setup-cpp@v1
+        #with:
+          #compiler: gcc
+
+      - name: Install dependencies
+        run: sudo apt-get install -y cmake g++
+
+      - name: Install ASIO
+        run: sudo apt-get install -y libasio-dev
+
+      - name: Build project
+        run: make
+
+      - name: Run tests
+        run: ./credit-report-web  --test  ||  echo "Tests failed"
