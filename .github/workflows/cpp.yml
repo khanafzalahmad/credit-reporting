@@ -15,10 +15,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Set up C++ environment
-        uses: actions/setup-cpp@v1
-        with:
-          compiler: gcc
+      #- name: Set up C++ environment
+        #uses: actions/setup-cpp@v1
+        #with:
+          #compiler: gcc
 
       - name: Install dependencies
         run: sudo apt-get install -y cmake g++
