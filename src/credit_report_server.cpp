@@ -1,31 +1,19 @@
-
 #include "crow_all.h"
 #include "../include/credit_report.h"
-#include <iostream>
-#include <string>
+#include "../include/credit_report_server.h"
 
-int main(int argc, char* argv[]) {
-    // Check for test mode
-    if (argc > 1 && std::string(argv[1]) == "--test") {
-        std::cout << "Running test mode..." << std::endl;
-        // Example test logic
-        CreditReport report;
-        report.fetchDetails("Afzal", "Bhandup", "Test Inquiry", "Test Keyword");
-        report.display();
-        return 0;
-    }
-
+void CreditReportServer::run() {
     crow::SimpleApp app;
 
     CROW_ROUTE(app, "/")
-    ([](){
+    ( -> crow::response {
         crow::response res;
         res.code = 200;
         res.set_header("Content-Type", "text/html");
         res.body =
             "<html><body>"
             "<h2>Credit Report Inquiry</h2>"
-            "<form action='/report' method='post'>"
+            "/report"
             "Name: <input name='name'><br>"
             "Address: <input name='address'><br>"
             "Inquiry: <input name='inquiry'><br>"
@@ -36,11 +24,11 @@ int main(int argc, char* argv[]) {
     });
 
     CROW_ROUTE(app, "/report").methods("POST"_method)
-    ([](const crow::request& req){
+    ( -> crow::response {
         std::string body = req.body;
         std::string name, address, inquiry, keyword;
 
-        auto url_decode = [](std::string value) {
+        auto url_decode =  {
             std::string result;
             for (size_t i = 0; i < value.length(); ++i) {
                 if (value[i] == '%') {
@@ -59,7 +47,7 @@ int main(int argc, char* argv[]) {
             return result;
         };
 
-        auto get_value = [url_decode](const std::string& body, const std::string& key) {
+        auto get_value = url_decode {
             size_t start = body.find(key + "=");
             if (start == std::string::npos) return std::string();
             start += key.length() + 1;
@@ -79,10 +67,9 @@ int main(int argc, char* argv[]) {
         crow::response res;
         res.code = 200;
         res.set_header("Content-Type", "text/html");
-        res.body = "<html><body><pre>" + report.getCustomerData() + "</pre><a href='/'>Back</a></body></html>";
+        res.body = "<html><body><pre>" + report.getCustomerData() + "</pre>/Back</a></body></html>";
         return res;
     });
 
     app.port(8080).multithreaded().run();
-    return 0;
 }
