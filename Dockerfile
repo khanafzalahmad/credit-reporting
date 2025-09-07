@@ -2,7 +2,10 @@
 
 # Build stage
 FROM ubuntu:22.04 AS build
-RUN apt-get update && apt-get install -y g++ make libsqlite3-dev
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    g++ make ca-certificates curl libsqlite3-dev libasio-dev \
+ && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 COPY . .
 RUN make
