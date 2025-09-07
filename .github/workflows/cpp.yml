@@ -31,3 +31,9 @@ jobs:
 
       - name: Run tests
         run: ./credit-report-web  --test  ||  echo "Tests failed"
+
+      - name:  Upload a build artifacts
+        uses:  actions/upload-artifact@v4.6.2
+        with:
+          name:  credit-reports-artificates 
+          path:  ./credit-report-web
