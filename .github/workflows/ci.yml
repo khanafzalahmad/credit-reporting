@@ -32,7 +32,7 @@ jobs:
 
             - name: push the docker image
               run: |
-                   docker push -b -p $DOCKER_IMAGE:${{github.sha}}
+                   docker push $DOCKER_IMAGE:${{github.sha}}
                    docker push $DOCKER_IMAGE:latest
             - name: container created
               run: |
