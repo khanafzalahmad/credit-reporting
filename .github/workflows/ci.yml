@@ -1,0 +1,36 @@
+name: CI docker workflow
+
+on:
+    workflow_dispatch: 
+
+env:
+    DOCKER_IMAGE: khanafzalahmad/cpp_proj_images
+    DOCKER_TAG: latest
+    DOCKER_USERNAME: ${{ vars.DOCKER_USERNAME }}
+    DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+
+jobs:
+    code-checkout:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@4.2.2
+        
+            - name: Docker login
+              uses: docker/login-avction@v3.4.0
+              with:
+                username: ${{env.DOCKER.USERNAME}}
+                password: ${{env.DOCKER_PASSWORD}}
+            
+            - name: Build image 
+              run: |
+                docker build -t $DOCKER_IMAGE:${{github.sha}} .
+                docker tag $DOCKER_IMAGE:${{github.sha}} $DOCKER_IMAGE:latest
+
+            - name: push the docker image
+              run: |
+                   docker push -b -p $DOCKER_IMAGE:${{github.sha}}
+                   docker push $DOCKER_IMAGE:latest
+            - name: container created
+              run: |
+                   docker run -d $DOCKER_IMAGE:${{github.sha}} -p 8080:8080 $DOCKER_IMAGE:latest
