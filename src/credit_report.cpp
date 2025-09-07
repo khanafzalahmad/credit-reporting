@@ -38,5 +38,5 @@ void CreditReport::fetchDetails(const std::string& name, const std::string& addr
 }
 
 void CreditReport::display() {
-    std::cout << "Customer Credit Report:\n" << customerData << std::endl;
+    std::cout << "Customer Credit Report: \n" << customerData << std::endl;
 }
