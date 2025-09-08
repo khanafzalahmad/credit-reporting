@@ -1,7 +1,9 @@
 name: CI docker workflow
 
 on:
-    workflow_dispatch: 
+    #push:
+      #branches:
+          #- main
 
 env:
     DOCKER_IMAGE: khanafzalahmad/cpp_proj_images
@@ -14,16 +16,47 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - name: Checkout
-              uses: actions/checkout@4.2.2
+              uses: actions/checkout@v5.0.0
+    #build:
+        #needs: code-checkout
+        #runs-on: ubuntu-latest
+        #steps:
+            
+            - name: Install dependencies
+              run: |
+                  sudo apt-get update
+                  sudo apt-get install -y build-essential cmake unzip wget
+            
+            - name: Install ASIO
+              run: sudo apt-get install -y libasio-dev
+        
+            - name: Install SonarCloud Build Wrapper
+              run: |
+                  wget https://sonarcloud.io/static/cpp/build-wrapper-linux-x86.zip
+                  unzip build-wrapper-linux-x86.zip -d .sonar
 
-    build:
-        needs: code-checkout
-        runs-on: ubuntu-latest
-        steps:   
-            - name: Docker login
-              uses: docker/login-avction@v3.4.0
+        
+            - name: Build with Build Wrapper
+              run: |
+                  .sonar/build-wrapper-linux-x86/build-wrapper-linux-x86-64 --out-dir bw-output make
+        
+            - name: Run SonarCloud Scan
+              uses: SonarSource/sonarqube-scan-action@v5
+              env:
+                  SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}      
               with:
-                username: ${{env.DOCKER.USERNAME}}
+                args: >
+                  --define sonar.projectKey=khanafzalahmad_credit-reporting
+                  --define sonar.organization=khanafzalahmad
+                  --define sonar.host.url=https://sonarcloud.io
+                  --define sonar.sources=src
+                  --define sonar.cfamily.build-wrapper-output=bw-output
+
+                
+            - name: Docker login
+              uses: docker/login-action@v3.5.0
+              with:
+                username: ${{env.DOCKER_USERNAME}}
                 password: ${{env.DOCKER_PASSWORD}}
             
             - name: Build image 
@@ -33,7 +66,7 @@ jobs:
 
             - name: push the docker image
               run: |
-                   docker push -b -p $DOCKER_IMAGE:${{github.sha}}
+                   docker push $DOCKER_IMAGE:${{github.sha}}
                    docker push $DOCKER_IMAGE:latest
             - name: container created
               run: |
