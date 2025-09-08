@@ -1,13 +1,13 @@
 ---
 name: C++ CI Workflow
 on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
-      - feature/credit-reporting
+  workflow_dispatch:
+    #branches:
+      #- main
+  #pull_request:
+    #branches:
+      #- main
+      #- feature/credit-reporting
 jobs:
   build:
     runs-on: ubuntu-latest
