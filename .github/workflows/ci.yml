@@ -45,7 +45,7 @@ jobs:
               with:
                 args: >
                   --define sonar.projectKey=khanafzalahmad_credit-reporting
-                  --define sonar.organization=khanfzalahmad
+                  --define sonar.organization=khanafzalahmad
                   --define sonar.host.url=https://sonarcloud.io
                   --define sonar.sources=src
                   --define sonar.cfamily.build-wrapper-output=bw-output
