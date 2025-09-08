@@ -75,13 +75,19 @@ resource "kubernetes_deployment" "app" {
                }
 
           readiness_probe {
-            http_get { path = "/healthz" port = "http" }
+            http_get { 
+                       path = "/healthz" 
+                       port = "http" 
+                     }
             initial_delay_seconds = 3
             period_seconds        = 10
           }
 
           liveness_probe {
-            http_get { path = "/healthz" port = "http" }
+            http_get { 
+                       path = "/healthz"
+                       port = "http" 
+                     }
             initial_delay_seconds = 10
             period_seconds        = 20
           }
