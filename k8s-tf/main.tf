@@ -69,7 +69,10 @@ resource "kubernetes_deployment" "app" {
           name  = var.app_name
           image = var.image
 
-          port { name = "http"; container_port = 8080 }
+          port { 
+                 name = "http"
+                 container_port = 8080
+               }
 
           readiness_probe {
             http_get { path = "/healthz" port = "http" }
