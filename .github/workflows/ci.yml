@@ -33,8 +33,7 @@ jobs:
         
             - name: Build with Build Wrapper
               run: |
-                  .sonar/build-wrapper-linux-x86/build-wrapper-linux-x86-64 --out-dir bw-output cmake .
-                  make
+                  .sonar/build-wrapper-linux-x86/build-wrapper-linux-x86-64 --out-dir bw-output make
         
             - name: Run SonarCloud Scan
               uses: SonarSource/sonarqube-scan-action@v5
