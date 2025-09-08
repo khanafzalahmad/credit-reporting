@@ -1,7 +1,9 @@
 name: CI docker workflow
 
 on:
-    workflow_dispatch: 
+    push:
+      branches:
+          - main
 
 env:
     DOCKER_IMAGE: khanafzalahmad/cpp_proj_images
