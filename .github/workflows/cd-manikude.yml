@@ -79,7 +79,7 @@ jobs:
           terraform_version: 1.7.5
 
       - name: Terraform Init
-        working-directory: k8s-tf
+        working-directory: ./k8s-tf
         env:
           TF_PLUGIN_CACHE_DIR: ${{ runner.temp }}/tfcache
         run: |
@@ -87,7 +87,7 @@ jobs:
           terraform init -input=false
 
       - name: Terraform Plan
-        working-directory: k8s-tf
+        working-directory: ./k8s-tf
         env:
           KUBECONFIG: ~/.kube/config
         run: |
@@ -99,7 +99,7 @@ jobs:
             # -var="docker_token=${{ secrets.DOCKER_PASSWORD }}"
 
       - name: Terraform Apply
-        working-directory: k8s-tf
+        working-directory: ./k8s-tf
         env:
           KUBECONFIG: ~/.kube/config
         run: |
