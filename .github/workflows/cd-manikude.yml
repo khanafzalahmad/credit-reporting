@@ -4,7 +4,7 @@ on:
   # Run manually, or auto-run when CI completes successfully
   #workflow_dispatch:
   workflow_run:
-    workflows: [ "ci" ]  # <-- This must match the name in ci.yml
+    workflows: [ "CI docker workflow" ]  # <-- This must match the name in ci.yml
     types:
       - completed
 
