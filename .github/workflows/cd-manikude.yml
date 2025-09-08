@@ -2,7 +2,7 @@ name: CD — Minikube Deploy with Terraform
 
 on:
   # Run manually, or auto-run when CI completes successfully
-  #workflow_dispatch:
+  workflow_dispatch:
   workflow_run:
     workflows: [ "CI docker workflow" ]  # <-- This must match the name in ci.yml
     types:
@@ -44,7 +44,7 @@ jobs:
         run: |
           set -eux
           curl -L -o /usr/local/bin/minikube https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
-          chmod +x /usr/local/bin/minikube
+          sudo chmod +x /usr/local/bin/minikube
           minikube version
 
       # --- Start minikube (Docker driver) ---
