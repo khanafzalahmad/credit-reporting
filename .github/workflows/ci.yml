@@ -18,7 +18,31 @@ jobs:
     #build:
         #needs: code-checkout
         #runs-on: ubuntu-latest
-        #steps:   
+        #steps:
+            
+            - name: Install dependencies
+              run: |
+                  sudo apt-get update
+                  sudo apt-get install -y build-essential cmake
+            
+            - name: SonarCloud Scan for C and C++
+              uses: SonarSource/sonarcloud-github-c-cpp@v3.2.0
+              with:
+                  sonar-token: ${{ secrets.SONAR_TOKEN }}
+                  project-key: ${{ secrets.SONAR_PROJECT_KEY }}
+                  organization: ${{ secrets.SONAR_ORGANIZATION }}
+                  build-command: |
+                    mkdir build
+                    cd build
+                    cmake ..
+                    make
+
+            - name: Analyze with SonarCloud
+              uses: codebeltnet/sonarcloud-scan@v2.0.0
+              with:
+                projectkey: khanafzalahmad_credit-reporting
+                password: ${{env.DOCKER_PASSWORD}}
+                
             - name: Docker login
               uses: docker/login-action@v3.5.0
               with:
