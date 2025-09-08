@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadta:
+  name: credit-report-web
+  namespace: credit-reporting
+spec:
+  replica: 3
+  selector:
+    matchLabels:
+      app: credit-report-web
+  template:
+      metadata:
+        Labels:
+          app: credit-report-web
+      spec:
+        containers:
+          - name: credit-report-web
+            image: docker.io/khanafzalahmad/cpp_proj_images
+            ports:
+              - containerPort: 8080
+            readinessProbe:
+              httpGet:
+                path: /healthz
+                port: 8080
+            livenessProbe:
+              httpGet:
+                path: /healthz
+                port: 8080
