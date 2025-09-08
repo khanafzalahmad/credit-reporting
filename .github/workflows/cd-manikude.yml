@@ -1,0 +1,149 @@
+name: CD — Minikube Deploy with Terraform
+
+on:
+  # Run manually, or auto-run when CI completes successfully
+  workflow_dispatch:
+  workflow_run:
+    workflows: [ "ci, Scan, Push" ]   # <-- must match your CI workflow name
+    types: [ "completed" ]
+
+permissions:
+  contents: read
+  packages: read   # pull from GHCR if private (we'll use public by default)
+
+env:
+  IMAGE_REGISTRY: docker.io
+  IMAGE_NAME: khanafzalahmad/cpp_proj_images
+  IMAGE_TAG: ${{ github.sha }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Show image ref to deploy
+        run: echo "Using image $IMAGE_REGISTRY/$IMAGE_NAME:$IMAGE_TAG"
+
+      # --- Install kubectl ---
+      - name: Install kubectl
+        run: |
+          set -eux
+          VER=$(curl -L -s https://dl.k8s.io/release/stable.txt)
+          curl -L -o /usr/local/bin/kubectl https://dl.k8s.io/release/${VER}/bin/linux/amd64/kubectl
+          chmod +x /usr/local/bin/kubectl
+          kubectl version --client
+
+      # --- Install minikube ---
+      - name: Install minikube
+        run: |
+          set -eux
+          curl -L -o /usr/local/bin/minikube https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+          chmod +x /usr/local/bin/minikube
+          minikube version
+
+      # --- Start minikube (Docker driver) ---
+      - name: Start Minikube
+        env:
+          KUBECONFIG: ~/.kube/config
+        run: |
+          set -eux
+          sudo apt-get update
+          sudo apt-get install -y conntrack
+          minikube start --driver=docker --cpus=2 --memory=4096
+          kubectl get nodes
+          kubectl get pods -A
+
+      # If your GHCR image is PRIVATE, uncomment this to create a pull secret
+      # - name: Create GHCR pull secret for private images
+      #   env:
+      #     KUBECONFIG: ~/.kube/config
+      #   run: |
+      #     kubectl create ns credit-reporting || true
+      #     kubectl -n credit-reporting create secret docker-registry ghcr-pull-secret \
+      #       --docker-server=docker.io \
+      #       --docker-username=${{ vars.DOCKER_USERNAME }} \
+      #       --docker-password=${{ secrets.DOCKER_PASSWORD }} \
+      #       --docker-email="khanafzalahmad22@gmail.com" \
+      #       --dry-run=client -o yaml | kubectl apply -f -
+
+      # --- Setup Terraform ---
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.7.5
+
+      - name: Terraform Init
+        working-directory: k8s-tf
+        env:
+          TF_PLUGIN_CACHE_DIR: ${{ runner.temp }}/tfcache
+        run: |
+          mkdir -p "$TF_PLUGIN_CACHE_DIR"
+          terraform init -input=false
+
+      - name: Terraform Plan
+        working-directory: k8s-tf
+        env:
+          KUBECONFIG: ~/.kube/config
+        run: |
+          terraform plan \
+            -var="image=${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}" \
+            -var="kubeconfig_path=${HOME}/.kube/config" \
+            # -var="create_image_pull_secret=true" \
+            # -var="docker_username=${{ vars.DOCKER_USERNAME }}" \
+            # -var="docker_token=${{ secrets.DOCKER_PASSWORD }}"
+
+      - name: Terraform Apply
+        working-directory: k8s-tf
+        env:
+          KUBECONFIG: ~/.kube/config
+        run: |
+          terraform apply -auto-approve \
+            -var="image=${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}" \
+            -var="kubeconfig_path=${HOME}/.kube/config"
+
+      # --- Verify rollout ---
+      - name: Wait for rollout
+        env:
+          KUBECONFIG: ~/.kube/config
+        run: |
+          kubectl -n credit-reporting rollout status deploy/credit-report-web --timeout=120s
+          kubectl -n credit-reporting get pods -o wide
+          kubectl -n credit-reporting get svc credit-report-web -o yaml
+
+      # --- Smoke test via port-forward ---
+      - name: Smoke test /healthz
+        env:
+          KUBECONFIG: ~/.kube/config
+        run: |
+          set -eux
+          kubectl -n credit-reporting port-forward svc/credit-report-web 8080:80 >/tmp/pf.log 2>&1 &
+          PF_PID=$!
+          # wait for forward
+          for i in $(seq 1 20); do
+            sleep 0.5
+            curl -fsS http://localhost:8080/healthz && break || true
+          done
+          curl -fsS http://localhost:8080/healthz
+          kill $PF_PID || true
+
+      # --- Collect diagnostics as artifacts ---
+      - name: Collect logs
+        if: always()
+        env:
+          KUBECONFIG: ~/.kube/config
+        run: |
+          mkdir -p artifacts
+          kubectl -n credit-reporting logs -l app=credit-report-web --tail=200 --prefix > artifacts/pods.log || true
+          kubectl -n credit-reporting get all -o wide > artifacts/resources.txt || true
+          kubectl version > artifacts/cluster-version.txt || true
+
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: k8s-diagnostics
+          path: artifacts
