@@ -5,6 +5,7 @@ on:
   #push:
     #branches:
       #main
+      #m
   workflow_dispatch:
   workflow_run:
     workflows: [ "CI docker workflow" ]  # <-- This must match the name in ci.yml
