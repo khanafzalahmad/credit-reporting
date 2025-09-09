@@ -74,10 +74,23 @@ jobs:
       #       --docker-password=${{ secrets.DOCKER_PASSWORD }} \
       #       --docker-email="khanafzalahmad22@gmail.com" \
       #       --dry-run=client -o yaml | kubectl apply -f -
-
+      
+      - name: Verify kubeconfig
+        run: |
+          echo "Kubeconfig path: $HOME/.kube/config"
+          ls -la $HOME/.kube
+          cat $HOME/.kube/config
+          
       - name: Export kubeconfig
         run: |
-          echo "KUBECONFIG=$(minikube kubeconfig)" >> $GITHUB_ENV
+          echo "KUBECONFIG=$HOME/.kube/config" >> $GITHUB_ENV
+      
+      - name: Wait for Kubernetes API
+        run: |
+          for i in {1..10}; do
+            kubectl version && break
+            sleep 5
+          done
 
       # --- Setup Terraform ---
       - name: Setup Terraform
@@ -116,7 +129,7 @@ jobs:
         run: |
           terraform apply -auto-approve \
             -var="image=${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}" \
-            -var="kubeconfig_path=${HOME}/.kube/config"
+            -var="kubeconfig_path=$HOME/.kube/config"
 
       # --- Verify rollout ---
       - name: Wait for rollout
