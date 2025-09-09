@@ -134,6 +134,15 @@ jobs:
             # -var="docker_username=${{ vars.DOCKER_USERNAME }}" \
             # -var="docker_token=${{ secrets.DOCKER_PASSWORD }}"
 
+      - name: Check pod status
+        run: kubectl -n credit-reporting get pods -o wide
+
+      - name: Check pod logs
+        run: kubectl -n credit-reporting logs -l app=credit-report-web --tail=100 || true
+
+      - name: Check events
+        run: kubectl -n credit-reporting get events --sort-by='.lastTimestamp'
+
       - name: Terraform Apply
         working-directory: k8s-tf
         env:
