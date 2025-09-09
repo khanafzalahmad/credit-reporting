@@ -98,6 +98,10 @@ jobs:
             # -var="docker_username=${{ vars.DOCKER_USERNAME }}" \
             # -var="docker_token=${{ secrets.DOCKER_PASSWORD }}"
 
+            # -var="create_image_pull_secret=true" \
+            # -var="docker_username=${{ vars.DOCKER_USERNAME }}" \
+            # -var="docker_token=${{ secrets.DOCKER_PASSWORD }}"
+
       - name: Terraform Apply
         working-directory: k8s-tf
         env:
