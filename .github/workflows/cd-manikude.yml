@@ -74,6 +74,14 @@ jobs:
       #       --docker-password=${{ secrets.DOCKER_PASSWORD }} \
       #       --docker-email="khanafzalahmad22@gmail.com" \
       #       --dry-run=client -o yaml | kubectl apply -f -
+      - name: Configure kubeconfig
+        run: |
+            mkdir -p $HOME/.kube
+            minikube update-context
+            echo "KUBECONFIG=$HOME/.kube/config" >> $GITHUB_ENV
+            ls -la $HOME/.kube
+            cat $HOME/.kube/config
+
       - name: Wait for Kubernetes API and kubeconfig
         run: |
           for i in {1..20}; do
