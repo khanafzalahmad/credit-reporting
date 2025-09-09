@@ -142,6 +142,9 @@ jobs:
           terraform apply -auto-approve \
             -var="image=${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}" \
             -var="kubeconfig_path=$HOME/.kube/config"
+      
+      - name: Check pod status
+        run: kubectl -n credit-reporting get pods -o wide
 
       # --- Verify rollout ---
       - name: Wait for rollout
