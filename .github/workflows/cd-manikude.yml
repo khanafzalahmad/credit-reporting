@@ -72,6 +72,12 @@ jobs:
       #       --docker-email="khanafzalahmad22@gmail.com" \
       #       --dry-run=client -o yaml | kubectl apply -f -
 
+      - name: Export kubeconfig
+        run: |
+            mkdir -p /home/runner/.kube
+            sudo cp /root/.kube/config /home/runner/.kube/config
+            sudo chown -R runner:runner /home/runner/.kube
+
       # --- Setup Terraform ---
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
