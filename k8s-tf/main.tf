@@ -8,9 +8,14 @@ terraform {
   }
 }
 
+
 provider "kubernetes" {
-  config_path = var.kubeconfig_path
+  host                   = "https://127.0.0.1:8443"
+  client_certificate     = file("~/.kube/client.crt")
+  client_key             = file("~/.kube/client.key")
+  cluster_ca_certificate = file("~/.kube/ca.crt")
 }
+
 
 resource "kubernetes_namespace" "ns" {
   metadata { name = var.namespace }
